@@ -1,0 +1,48 @@
+<section class="section" th:fragment="page">
+    <div class="card">
+        <div class="card-header">
+            <h4 class="card-title">Nouveau Paiement Société</h4>
+        </div>
+
+        <div class="card-body">
+
+            <form th:action="@{/paiements-societe/saisie}" method="post">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="idSociete" class="form-label">Société <span class="text-danger">*</span></label>
+                        <select class="form-select" id="idSociete" name="idSociete" required>
+                            <option value="">-- Sélectionner une société --</option>
+                            <option th:each="societe : ${societes}" 
+                                    th:value="${societe.idSociete}"
+                                    th:text="${societe.nom}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="montant" class="form-label">Montant <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="montant" name="montant" 
+                               required min="0" step="0.01"
+                               placeholder="Montant du paiement">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="created" class="form-label">Date et Heure <span class="text-danger">*</span></label>
+                        <input type="datetime-local" class="form-control" id="created" name="created" required>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Enregistrer
+                        </button>
+                        <a th:href="@{/paiements-societe/liste}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Annuler
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>

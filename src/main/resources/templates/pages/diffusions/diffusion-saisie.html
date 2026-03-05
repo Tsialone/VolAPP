@@ -1,0 +1,54 @@
+<section class="section" th:fragment="page">
+    <div class="card">
+        <div class="card-header">
+            <h4 class="card-title">Nouvelle Diffusion</h4>
+        </div>
+
+        <div class="card-body">
+
+            <form th:action="@{/diffusions/saisie}" method="post">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="idSeance" class="form-label">Séance <span class="text-danger">*</span></label>
+                        <select class="form-select" id="idSeance" name="idSeance" required>
+                            <option value="">-- Sélectionner une séance --</option>
+                            <option th:each="seance : ${seances}" 
+                                    th:value="${seance.idSeance}"
+                                    th:text="${seance.film.nom} + ' - ' + ${#temporals.format(seance.dateTimeDebut, 'dd/MM/yyyy HH:mm')}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="idPub" class="form-label">Publicité <span class="text-danger">*</span></label>
+                        <select class="form-select" id="idPub" name="idPub" required>
+                            <option value="">-- Sélectionner une publicité --</option>
+                            <option th:each="pub : ${pubs}" 
+                                    th:value="${pub.idPub}"
+                                    th:text="${pub.desc} + ' (' + ${pub.societe.nom} + ')'">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="nbrPub" class="form-label">Nombre de diffusions <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="nbrPub" name="nbrPub" 
+                               required min="1" value="1"
+                               placeholder="Nombre de fois à diffuser">
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Enregistrer
+                        </button>
+                        <a th:href="@{/diffusions/liste}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Annuler
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>

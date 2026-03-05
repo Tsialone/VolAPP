@@ -1,0 +1,62 @@
+<section class="section" th:fragment="page">
+    <div class="card">
+        <div class="card-header">
+            <h4 class="card-title">Nouvelle Place</h4>
+        </div>
+
+        <div class="card-body">
+          
+
+            <form th:action="@{/places/saisie}" method="post">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="salleId" class="form-label">Salle <span class="text-danger">*</span></label>
+                        <select class="form-select" id="salleId" name="salleId" required>
+                            <option value="">-- Sélectionner une salle --</option>
+                            <option th:each="salle : ${salles}" 
+                                    th:value="${salle.idSalle}"
+                                    th:text="${salle.nom != null ? salle.nom : 'Salle ' + salle.idSalle}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="idCategoriePlace" class="form-label">Catégorie de Place <span class="text-danger">*</span></label>
+                        <select class="form-select" id="idCategoriePlace" name="idCategoriePlace" required>
+                            <option value="">-- Sélectionner une catégorie --</option>
+                            <option th:each="categorie : ${categoriesPlace}" 
+                                    th:value="${categorie.idCp}"
+                                    th:text="${categorie.libelle}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="quantite" class="form-label">Quantité <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="quantite" name="quantite" 
+                               required min="1" value="1"
+                               placeholder="Nombre de places à créer">
+                        <small class="text-muted">Les numéros seront générés automatiquement</small>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="nom" class="form-label">Nom (optionnel)</label>
+                        <input type="text" class="form-control" id="nom" name="nom" 
+                               placeholder="Nom ou description de la place">
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Enregistrer
+                        </button>
+                        <a th:href="@{/places/liste}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Annuler
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>

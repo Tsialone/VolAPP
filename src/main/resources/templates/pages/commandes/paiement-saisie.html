@@ -1,0 +1,32 @@
+<section class="section" th:fragment="page">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 class="card-title">Saisie Paiement Commande</h4>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/paiement-commande/saisie}" method="post">
+                <input type="hidden" name="idCommande" th:value="${detail != null ? detail.commande.idCommande : ''}" />
+
+                <div class="mb-3">
+                    <label class="form-label">Commande</label>
+                    <input class="form-control" type="text" readonly th:value="${detail != null && detail.commande != null ? detail.commande.strId + ' (ID:' + detail.commande.idCommande + ')' : ''}" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Société</label>
+                    <input class="form-control" type="text" readonly th:value="${detail != null && detail.commande != null && detail.commande.societe != null ? detail.commande.societe.nom : ''}" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Montant</label>
+                    <input class="form-control" type="text" name="montant" th:value="${montant}" placeholder="0.00" required />
+                </div>
+
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-primary">Valider</button>
+                    <a th:href="@{/commandes/liste}" class="btn btn-secondary">Annuler</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
