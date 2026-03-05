@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class HomeController {
 
-    @GetMapping ("/home")
+    @GetMapping ("/")
     public String getListe(Model model) {
 
 
