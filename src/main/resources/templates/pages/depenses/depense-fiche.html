@@ -93,7 +93,10 @@
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div class="d-flex align-items-center gap-2">
                                         <span class="detail-badge" th:text="${stat.count}">1</span>
-                                        <strong th:text="${detail.categorieDepenseDetail.libelle}">Catégorie détail</strong>
+                                        <a th:href="@{/categorie-depense-details/fiche/{id}(id=${detail.categorieDepenseDetail.idCategorieDepenseDetail})}" 
+                                           class="text-decoration-none text-dark">
+                                            <strong th:text="${detail.categorieDepenseDetail.libelle}">Catégorie détail</strong>
+                                        </a>
                                     </div>
                                     <span class="total-ligne" data-montant 
                                           th:attr="data-montant=${detail.qte * detail.pu}"
@@ -200,6 +203,11 @@
         
         .detail-item:hover {
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .detail-header a:hover strong {
+            color: #435ebe !important;
+            text-decoration: underline !important;
         }
         
         .detail-header {

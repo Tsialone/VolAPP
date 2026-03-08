@@ -1,10 +1,11 @@
 <section class="section" th:fragment="page">
     <form class="form" method="post" th:action="@{/depenses/save}" id="depenseForm">
+        <input type="hidden" name="idDepense" th:value="${depenseForm != null ? depenseForm.idDepense : ''}">
         <div class="row match-height">
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="card-title">Insertion de dépense</h4>
+                        <h4 class="card-title" th:text="${depenseForm != null and depenseForm.idDepense != null ? 'Modification de dépense' : 'Insertion de dépense'}">Insertion de dépense</h4>
                     </div>
                     <div class="card-content">
                         <div class="card-body">

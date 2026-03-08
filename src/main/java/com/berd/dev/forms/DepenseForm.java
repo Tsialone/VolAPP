@@ -7,6 +7,7 @@ import lombok.Data;
 
 @Data
 public class DepenseForm {
+    private Integer idDepense;
     private Integer idCategorieDepense;
     private LocalDateTime created;
     private String description;
