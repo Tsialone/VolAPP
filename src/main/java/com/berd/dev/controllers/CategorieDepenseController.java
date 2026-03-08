@@ -91,10 +91,12 @@ public class CategorieDepenseController {
     public String delete(@PathVariable Integer id, RedirectAttributes rd) {
         try {
             CategorieDepense categorieDepense = categorieDepenseService.getById(id);
-            if (categorieDepense == null)  throw new Exception("Catégorie dépense non trouvée avec l'ID : " + id);
+            if (categorieDepense == null)
+                throw new Exception("Catégorie dépense non trouvée avec l'ID : " + id);
             List<CategorieDepenseDetail> details = categorieDepenseDetailService.getByIdCategorieDepense(id);
             if (details != null && !details.isEmpty()) {
-                throw new Exception("Impossible de supprimer cette catégorie car elle est associée à des détails de dépense.");
+                throw new Exception(
+                        "Impossible de supprimer cette catégorie car elle est associée à des détails de dépense.");
             }
             categorieDepenseService.deleteById(id);
 
@@ -105,5 +107,22 @@ public class CategorieDepenseController {
             rd.addFlashAttribute("toastType", "error");
         }
         return "redirect:/categorie-depenses/liste";
+    }
+
+    @GetMapping("/fiche/{id}")
+    public String fiche(@PathVariable Integer id, Model model, RedirectAttributes rd) {
+        try {
+            CategorieDepense categorieDepense = categorieDepenseService.getById(id);
+            List<CategorieDepenseDetail> details = categorieDepenseDetailService.getByIdCategorieDepense(id);
+
+            model.addAttribute("categorieDepense", categorieDepense);
+            model.addAttribute("details", details);
+            model.addAttribute("content", "pages/categorie-depenses/categorie-depense-fiche");
+            return "admin-layout";
+        } catch (Exception e) {
+            rd.addFlashAttribute("toastMessage", "Catégorie non trouvée");
+            rd.addFlashAttribute("toastType", "error");
+            return "redirect:/categorie-depenses/liste";
+        }
     }
 }
