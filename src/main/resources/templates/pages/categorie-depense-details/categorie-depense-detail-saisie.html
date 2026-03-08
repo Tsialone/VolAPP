@@ -37,7 +37,8 @@
                                        required>
                                 <input type="hidden" 
                                        th:field="*{idCategorieDepense}" 
-                                       id="idCategorieDepense">
+                                       id="idCategorieDepense"
+                                       th:value="${detailForm != null ? detailForm.idCategorieDepense : detail.idCategorieDepense}">
                                 <div class="invalid-feedback">
                                     Veuillez sélectionner une catégorie
                                 </div>
@@ -53,6 +54,7 @@
                                        th:field="*{libelle}"
                                        id="libelle"
                                        placeholder="Ex: Salaire, Loyer..."
+                                       th:value="${detailForm != null ? detailForm.libelle : detail.libelle}"
                                        required>
                                 <div class="invalid-feedback">
                                     Le libellé est obligatoire
@@ -81,6 +83,7 @@
 
     <script th:inline="javascript">
         const categoriesData = /*[[${categories}]]*/ [];
+        const detailFormFromSession = /*[[${detailForm}]]*/ null;
         
         // Fonction pour créer un autocomplete (identique à depense-saisie)
         function setupAutocomplete(input, dataSource, valueField, labelField) {
@@ -156,6 +159,12 @@
                     return;
                 }
                 
+                // Vider le champ caché si le texte ne correspond pas exactement
+                const exactMatch = filtered.find(item => item[labelField].toLowerCase() === searchTerm);
+                if (!exactMatch) {
+                    hiddenInput.value = '';
+                }
+                
                 showResults(filtered);
             });
             
@@ -204,7 +213,7 @@
             // Configurer l'autocomplete
             setupAutocomplete(inputCategorie, categoriesData, 'idCategorieDepense', 'libelle');
             
-            // Si modification, pré-remplir la catégorie
+            // Pré-remplir la catégorie depuis le formulaire en session OU depuis detail
             const idCategorieActuel = hiddenIdCategorie.value;
             if (idCategorieActuel) {
                 const categorieActuelle = categoriesData.find(c => c.idCategorieDepense == idCategorieActuel);
@@ -213,20 +222,7 @@
                 }
             }
             
-            // Validation du formulaire
-            form.addEventListener('submit', function(e) {
-                if (!hiddenIdCategorie.value) {
-                    e.preventDefault();
-                    inputCategorie.classList.add('is-invalid');
-                    return false;
-                }
-                return true;
-            });
-            
-            // Retirer l'erreur lors de la saisie
-            inputCategorie.addEventListener('input', function() {
-                this.classList.remove('is-invalid');
-            });
+            // Pas de validation JavaScript, on laisse le back gérer
         });
     </script>
 

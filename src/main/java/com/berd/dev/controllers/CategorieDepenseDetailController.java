@@ -16,6 +16,7 @@ import com.berd.dev.models.CategorieDepenseDetail;
 import com.berd.dev.services.CategorieDepenseDetailService;
 import com.berd.dev.services.CategorieDepenseService;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @Controller
@@ -46,15 +47,25 @@ public class CategorieDepenseDetailController {
     }
 
     @GetMapping("/saisie")
-    public String saisie(@RequestParam(required = false) Integer categorieId, Model model) {
-        CategorieDepenseDetail detail = new CategorieDepenseDetail();
+    public String saisie(@RequestParam(required = false) Integer categorieId, HttpSession session, Model model) {
+        CategorieDepenseDetail detail;
+        CategorieDepenseDetail detailForm = null;
 
-        // Si un categorieId est passé en paramètre, le pré-remplir
-        if (categorieId != null) {
-            detail.setIdCategorieDepense(categorieId);
+        // Récupérer le formulaire de la session s'il existe
+        if (session.getAttribute("detailForm") != null) {
+            detailForm = (CategorieDepenseDetail) session.getAttribute("detailForm");
+            detail = detailForm;
+            session.removeAttribute("detailForm");
+        } else {
+            detail = new CategorieDepenseDetail();
+            // Si un categorieId est passé en paramètre, le pré-remplir
+            if (categorieId != null) {
+                detail.setIdCategorieDepense(categorieId);
+            }
         }
 
         model.addAttribute("detail", detail);
+        model.addAttribute("detailForm", detailForm);
         model.addAttribute("categories", categorieService.getAll());
         model.addAttribute("content", "pages/categorie-depense-details/categorie-depense-detail-saisie");
 
@@ -80,9 +91,21 @@ public class CategorieDepenseDetailController {
     }
 
     @PostMapping("/save")
-    public String save(@ModelAttribute CategorieDepenseDetail detail, RedirectAttributes rd) {
+    public String save(@ModelAttribute CategorieDepenseDetail detail, HttpSession session, RedirectAttributes rd) {
         try {
+            // Validation backend
+            if (detail.getIdCategorieDepense() == null) {
+                // Conserver le formulaire en session
+                session.setAttribute("detailForm", detail);
+                rd.addFlashAttribute("toastMessage", "Veuillez sélectionner une catégorie dépense");
+                rd.addFlashAttribute("toastType", "error");
+                return "redirect:/categorie-depense-details/saisie";
+            }
+
             detailService.saveDetail(detail);
+
+            // Succès : supprimer le formulaire de la session
+            session.removeAttribute("detailForm");
 
             String message = detail.getIdCategorieDepenseDetail() == null
                     ? "Détail ajouté avec succès"
@@ -91,8 +114,12 @@ public class CategorieDepenseDetailController {
             rd.addFlashAttribute("toastMessage", message);
             rd.addFlashAttribute("toastType", "success");
         } catch (Exception e) {
+            e.printStackTrace();
+            // Conserver le formulaire en session en cas d'erreur
+            session.setAttribute("detailForm", detail);
             rd.addFlashAttribute("toastMessage", "Erreur lors de l'enregistrement: " + e.getMessage());
             rd.addFlashAttribute("toastType", "error");
+            return "redirect:/categorie-depense-details/saisie";
         }
         return "redirect:/categorie-depense-details/liste";
     }
