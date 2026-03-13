@@ -321,8 +321,7 @@
             }
         }
 
-        function renderCourbeCategorie(periodeKey) {
-            const cfg = depenseCategorieCourbeData[periodeKey];
+        function renderCourbeCategorieFromConfig(cfg) {
             const svg = document.getElementById('categorieCourbeSvg');
             const legend = document.getElementById('courbeLegend');
 
@@ -430,6 +429,29 @@
                 `;
                 legend.appendChild(legendItem);
             });
+        }
+
+        async function renderCourbeCategorie(periodeKey) {
+            const svg = document.getElementById('categorieCourbeSvg');
+            const legend = document.getElementById('courbeLegend');
+
+            svg.innerHTML = '';
+            legend.innerHTML = '<small class="text-muted">Chargement...</small>';
+
+            try {
+                const response = await fetch(`/api/depenses/stats/courbe-categorie?periode=${encodeURIComponent(periodeKey)}`);
+                if (!response.ok) {
+                    throw new Error('Erreur API courbe categorie');
+                }
+
+                const payload = await response.json();
+                renderCourbeCategorieFromConfig({
+                    labels: payload.labels || [],
+                    series: payload.series || []
+                });
+            } catch (e) {
+                renderCourbeCategorieFromConfig(depenseCategorieCourbeData[periodeKey]);
+            }
         }
 
         function renderBarChart(svgId, data, color) {

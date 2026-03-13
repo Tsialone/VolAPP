@@ -3,6 +3,7 @@ package com.berd.dev.services;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
@@ -15,6 +16,8 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.berd.dev.dtos.CategorieCourbeResponseDto;
+import com.berd.dev.dtos.CategorieSerieDto;
 import com.berd.dev.dtos.RecapPointDto;
 import com.berd.dev.dtos.RecapResponseDto;
 import com.berd.dev.models.Depense;
@@ -65,6 +68,52 @@ public class DepenseStatsService {
                 maxPoint.map(RecapPointDto::depenseMoyenne).orElse(0.0));
     }
 
+            public CategorieCourbeResponseDto getCourbeParCategorie(String periode) {
+            String periodeNormalisee = normalizePeriode(periode);
+
+            List<Depense> depenses = depenseRepository.findAll().stream()
+                .filter(depense -> depense.getCreated() != null)
+                .sorted(Comparator.comparing(Depense::getCreated))
+                .toList();
+
+            Map<String, String> periodKeyToLabel = new LinkedHashMap<>();
+            Map<String, Map<String, Double>> categorySeries = new LinkedHashMap<>();
+
+            for (Depense depense : depenses) {
+                String periodKey = toPeriodKey(depense.getCreated(), periodeNormalisee);
+                String periodLabel = toPeriodLabel(depense.getCreated(), periodeNormalisee);
+                periodKeyToLabel.putIfAbsent(periodKey, periodLabel);
+
+                String categorie = depense.getCategorieDepense() != null
+                    && depense.getCategorieDepense().getLibelle() != null
+                        ? depense.getCategorieDepense().getLibelle()
+                        : "Sans catégorie";
+
+                double montant = calculateMontantDepense(depense);
+
+                categorySeries
+                    .computeIfAbsent(categorie, k -> new LinkedHashMap<>())
+                        .merge(periodKey, montant, (existingValue, newValue) ->
+                            (existingValue != null ? existingValue : 0.0)
+                                + (newValue != null ? newValue : 0.0));
+            }
+
+            List<String> periodKeys = new ArrayList<>(periodKeyToLabel.keySet());
+            List<String> labels = periodKeys.stream().map(periodKeyToLabel::get).toList();
+
+            List<CategorieSerieDto> series = categorySeries.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .map(entry -> {
+                    List<Double> values = periodKeys.stream()
+                        .map(key -> entry.getValue().getOrDefault(key, 0.0))
+                        .toList();
+                    return new CategorieSerieDto(entry.getKey(), values);
+                })
+                .toList();
+
+            return new CategorieCourbeResponseDto(periodeNormalisee, labels, series);
+            }
+
     private String normalizePeriode(String periode) {
         if (periode == null || periode.isBlank()) {
             return "mensuelle";
@@ -90,6 +139,17 @@ public class DepenseStatsService {
             }
             case "annuelle" -> String.valueOf(created.getYear());
             default -> capitalizeMonth(created.format(MOIS_FORMAT));
+        };
+    }
+
+    private String toPeriodKey(LocalDateTime created, String periode) {
+        return switch (periode) {
+            case "journaliere" -> created.toLocalDate().toString();
+            case "hebdomadaire" -> created.toLocalDate()
+                    .with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+                    .toString();
+            case "annuelle" -> String.valueOf(created.getYear());
+            default -> YearMonth.from(created).toString();
         };
     }
 

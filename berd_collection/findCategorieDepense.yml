@@ -5,10 +5,10 @@ info:
 
 http:
   method: GET
-  url: http://localhost:8080/api/depenses/stats/recap?periode=mensuel
+  url: http://localhost:8080/api/depenses/stats/courbe-categorie?periode=annuelle
   params:
     - name: periode
-      value: mensuel
+      value: annuelle
       type: query
   auth: inherit
 
