@@ -5,7 +5,11 @@ info:
 
 http:
   method: GET
-  url: http://localhost:8080/api/CategorieDepenses/moto
+  url: http://localhost:8080/api/depenses/stats/recap?periode=mensuel
+  params:
+    - name: periode
+      value: mensuel
+      type: query
   auth: inherit
 
 settings:
