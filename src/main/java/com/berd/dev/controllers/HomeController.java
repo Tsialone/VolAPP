@@ -23,6 +23,9 @@ public class HomeController {
 
     private final UserService userService;
 
+
+    
+
     @GetMapping("/activate")
     public String activate(@RequestParam("token") String token, Model model, RedirectAttributes rd,
             HttpServletRequest request) {
@@ -61,6 +64,7 @@ public class HomeController {
     @GetMapping("/")
     public String login(HttpServletRequest request, Model model) {
         // On récupère le message précis qu'on a mis juste au-dessus
+        uniteService.getAll();
         String error = (String) request.getSession().getAttribute("loginErrorMessage");
         String username = (String) request.getSession().getAttribute("username");
         String password = (String) request.getSession().getAttribute("password");
@@ -124,6 +128,8 @@ public class HomeController {
 
         return "redirect:/signin";
     }
+
+
 
     // @GetMapping("/logout")
     // public String logout(Model model, HttpSession session) {
