@@ -8,4 +8,7 @@ import com.berd.dev.models.User;
 
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUsername(String username);
+    Optional<User> findByValidationToken(String token);
+    Optional<User> findByEmail(String email);
+
 }

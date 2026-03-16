@@ -1,9 +1,5 @@
 package com.berd.dev.controllers;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,12 +8,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.berd.dev.models.User;
-import com.berd.dev.repositories.UserRepository;
 import com.berd.dev.services.UniteService;
 import com.berd.dev.services.UserService;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,6 +23,26 @@ public class HomeController {
 
     private final UserService userService;
 
+    @GetMapping("/activate")
+    public String activate(@RequestParam("token") String token, Model model, RedirectAttributes rd,
+            HttpServletRequest request) {
+
+        try {
+            userService.activateUser(token);
+
+        } catch (Exception e) {
+            rd.addFlashAttribute("toastMessage", e.getMessage());
+            rd.addFlashAttribute("toastType", "error");
+            return "redirect:/signin";
+
+        }
+
+        rd.addFlashAttribute("toastMessage", "Votre compte a été activé avec succès.");
+        rd.addFlashAttribute("toastType", "success");
+        request.getSession().removeAttribute("user");
+        return "redirect:/";
+
+    }
 
     @GetMapping("/home")
     public String getListe(Model model) {
@@ -37,9 +51,10 @@ public class HomeController {
         model.addAttribute("content", "pages/home");
         return "admin-layout";
     }
-     @GetMapping("/forgot")
+
+    @GetMapping("/forgot")
     public String forgot(HttpServletRequest request, Model model) {
-       
+
         return "pages/auths/forgot-saisie";
     }
 
@@ -75,38 +90,45 @@ public class HomeController {
     }
 
     @GetMapping("/signin")
-    public String sign(Model model) {
-        User user = new User();
-        user.setEmail("tsialone1902@gmail.com");
-        model.addAttribute("user", user);
+    public String sign(Model model , HttpServletRequest request) {
 
+        User user = (User) request.getSession().getAttribute("user");
+        model.addAttribute("user", user);
 
         return "pages/auths/signin-saisie";
     }
 
     @PostMapping("/signin")
-    public String sign(User user, RedirectAttributes rd) {
+    public String sign(User user, RedirectAttributes rd, HttpServletRequest request) {
 
         try {
             System.out.println(user);
-            userService.save(user);
+            String currPassword =  new String(user.getPassword()) ;
+            userService.save(user, request);
+            user.setPassword(currPassword);
+            rd.addFlashAttribute("user", user);
         } catch (Exception e) {
             e.printStackTrace();
             rd.addFlashAttribute("toastMessage", e.getMessage());
             rd.addFlashAttribute("toastType", "error");
-            rd.addFlashAttribute("user", user);
             return "redirect:/signin";
         }
-        rd.addFlashAttribute("toastMessage", "Inscription réussie ! Vous pouvez maintenant vous connecter.");
+        rd.addFlashAttribute("toastMessage",
+                "Inscription réussie! Veuillez vérifier votre email pour activer votre compte.");
         rd.addFlashAttribute("toastType", "success");
 
-        return "redirect:/";
+
+        System.out.println(user);
+
+        request.getSession().setAttribute("user", user);
+
+        return "redirect:/signin";
     }
 
     // @GetMapping("/logout")
     // public String logout(Model model, HttpSession session) {
-    //     session.invalidate();
-    //     return "pages/auths/login-saisie";
+    // session.invalidate();
+    // return "pages/auths/login-saisie";
     // }
 
 }

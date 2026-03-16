@@ -1,8 +1,11 @@
 package com.berd.dev.config;
 
+import javax.security.auth.login.CredentialException;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -19,7 +22,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/" , "/forgot", "/signin", "/assets/**").permitAll()
+                        .requestMatchers("/", "/activate", "/forgot", "/signin", "/assets/**").permitAll()
                         .requestMatchers("/api/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/admin/**").hasRole("ADMIN") // Reservé Admin
                         .anyRequest().authenticated() // Tout le reste protégé
@@ -42,7 +45,11 @@ public class SecurityConfig {
                                 errorMessage = "Votre compte n'est pas encore activé.";
                             } else if (exception instanceof LockedException) {
                                 errorMessage = "Votre compte est verrouillé (trop d'essais).";
+                            } else if (exception instanceof CredentialsExpiredException) {
+                                errorMessage = "Votre compte n'est pas encore activé. Veuillez renvoyer la demande d'activation.";
                             }
+
+                            System.out.println(exception.getClass().getName());
 
                             // On met le message en session (Flash) pour le récupérer au GET "/"
                             request.getSession().setAttribute("loginErrorMessage", errorMessage);
@@ -50,20 +57,17 @@ public class SecurityConfig {
                             request.getSession().setAttribute("password", password);
 
                             response.sendRedirect("/?error");
-                        })
-                        .permitAll())
-                .rememberMe(remember -> remember
-                        .key("maCleSecreteUniqueEtLongue") // Clé pour chiffrer le cookie
+                        }).permitAll())
+                .rememberMe(remember -> remember.key("maCleSecreteUniqueEtLongue") // Clé pour chiffrer le cookie
                         .tokenValiditySeconds(86400 * 14) // Durée : 14 jours (en secondes)
                         .rememberMeParameter("remember-me") // Le 'name' de la checkbox HTML
-                )
-                .logout(logout -> logout
-                        .logoutUrl("/logout") // L'URL que le formulaire POST utilise
+                ).logout(logout -> logout.logoutUrl("/logout") // L'URL que le formulaire POST utilise
                         .logoutSuccessUrl("/?logout=true") // Redirection vers le login avec un message
                         .invalidateHttpSession(true) // Détruit la session
                         .deleteCookies("JSESSIONID") // Nettoie les cookies
                         .permitAll());
         return http.build();
+
     }
 
     @Bean

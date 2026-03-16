@@ -1,5 +1,6 @@
 package com.berd.dev.models;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -33,7 +34,11 @@ public class User implements UserDetails {
     private boolean active = false; 
 
     
+    @Column(name = "validation_token")
     private String validationToken; 
+
+    @Column(name = "created_token")
+    private LocalDateTime createdToken;
 
     @Column(unique = true, name = "email", nullable = false)
     private String email;
