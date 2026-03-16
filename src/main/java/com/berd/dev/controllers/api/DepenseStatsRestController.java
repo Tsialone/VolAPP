@@ -1,4 +1,4 @@
-package com.berd.dev.controllers;
+package com.berd.dev.controllers.api;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
