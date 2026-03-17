@@ -1,7 +1,10 @@
 package com.berd.dev.controllers;
 
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,6 +25,64 @@ public class HomeController {
     private final UniteService uniteService;
 
     private final UserService userService;
+
+    @GetMapping("/reset-password")
+    public String resetPasswordForm(@RequestParam("token") String token, Model model, RedirectAttributes rd,
+            HttpServletRequest request) {
+        User user = null;
+        try {
+            user = userService.getByResetToken(token);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            rd.addFlashAttribute("toastMessage", e.getMessage());
+            rd.addFlashAttribute("toastType", "error");
+            return "redirect:/forgot";
+
+        }
+
+        rd.addFlashAttribute("toastMessage",
+                "Votre compte a été verifié avec succès. Veuillez saisir votre nouveau mot de passe.");
+        rd.addFlashAttribute("toastType", "success");
+        rd.addFlashAttribute("userReset", user);
+        request.getSession().setAttribute("userReset", user);
+        return "redirect:/forgot-reset";
+
+    }
+
+    @GetMapping("/forgot-reset")
+    public String forgotReset(HttpServletRequest request, Model model) {
+
+        return "pages/auths/forgot-reset";
+    }
+
+    @PostMapping("/forgot-reset")
+    public String forgotResetSave(HttpServletRequest request, Model model, RedirectAttributes rd) {
+        String pass1 = request.getParameter("pass1");
+        String pass2 = request.getParameter("pass2");
+        try {
+            User user = (User) request.getSession().getAttribute("userReset");
+
+            userService.resetPassword(user, pass1, pass2);
+
+            request.getSession().removeAttribute("userReset");
+        } catch (Exception e) {
+
+            rd.addFlashAttribute("toastMessage", e.getMessage());
+            rd.addFlashAttribute("toastType", "error");
+            rd.addFlashAttribute("pass1", pass1);
+            rd.addFlashAttribute("pass2", pass2);
+
+            return "redirect:/forgot-reset";
+
+        }
+
+        rd.addFlashAttribute("toastMessage", "Votre mot de passe a été réinitialisé avec succès.");
+        rd.addFlashAttribute("toastType", "success");
+
+        return "redirect:/";
+
+    }
 
     @GetMapping("/activate")
     public String activate(@RequestParam("token") String token, Model model, RedirectAttributes rd,
@@ -59,9 +120,14 @@ public class HomeController {
     }
 
     @GetMapping("/")
-    public String login(HttpServletRequest request, Model model) {
+    public String login(HttpServletRequest request, Model model, Authentication auth,
+            @CookieValue(value = "LAST_URL", defaultValue = "/home") String lastUrl) {
         // On récupère le message précis qu'on a mis juste au-dessus
         uniteService.getAll();
+
+        if (auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken)) {
+            return "redirect:" + lastUrl;
+        }
         String error = (String) request.getSession().getAttribute("loginErrorMessage");
         String username = (String) request.getSession().getAttribute("username");
         String password = (String) request.getSession().getAttribute("password");
