@@ -1,7 +1,10 @@
 package com.berd.dev.controllers;
 
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -59,9 +62,14 @@ public class HomeController {
     }
 
     @GetMapping("/")
-    public String login(HttpServletRequest request, Model model) {
+    public String login(HttpServletRequest request, Model model, Authentication auth,
+            @CookieValue(value = "LAST_URL", defaultValue = "/home") String lastUrl) {
         // On récupère le message précis qu'on a mis juste au-dessus
         uniteService.getAll();
+
+        if (auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken)) {
+            return "redirect:" + lastUrl;
+        }
         String error = (String) request.getSession().getAttribute("loginErrorMessage");
         String username = (String) request.getSession().getAttribute("username");
         String password = (String) request.getSession().getAttribute("password");
