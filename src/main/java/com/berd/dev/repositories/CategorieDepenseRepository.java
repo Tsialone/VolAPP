@@ -12,14 +12,20 @@ import com.berd.dev.models.CategorieDepense;
 
 public interface CategorieDepenseRepository extends JpaRepository<CategorieDepense, Integer> {
 
-    List<CategorieDepense> findByLibelle(String libelle);
+        @Query("SELECT cd FROM categorie_depense cd")
+        List<CategorieDepense> findWithoutUser();
 
-    @Query("SELECT cd FROM categorie_depense cd WHERE lower(cd.libelle) LIKE lower(CONCAT('%', :criteria, '%')) OR lower(cd.type) LIKE lower(CONCAT('%', :criteria, '%'))")
-    List<CategorieDepense> findByCriteria(@Param("criteria") String criteria);
+        List<CategorieDepense> findByLibelle(String libelle);
 
-    @Query("SELECT cd FROM categorie_depense cd WHERE " +
-            "(:search = '' OR lower(cd.libelle) LIKE lower(CONCAT('%', :search, '%'))) AND " +
-            "(:type = '' OR lower(cd.type) LIKE lower(CONCAT('%', :type, '%')))")
-    Page<CategorieDepense> findByFilters(@Param("search") String search, @Param("type") String type, Pageable pageable);
+        @Query("SELECT cd FROM categorie_depense cd WHERE lower(cd.libelle) LIKE lower(CONCAT('%', :criteria, '%')) OR lower(cd.type) LIKE lower(CONCAT('%', :criteria, '%')) AND (:idUtilisateur = cd.utilisateur.idUtilisateur OR cd.utilisateur is null)")
+        List<CategorieDepense> findByCriteria(@Param("criteria") String criteria,
+                        @Param("idUtilisateur") Long idUtilisateur);
+
+        @Query("SELECT cd FROM categorie_depense cd WHERE " +
+                        "(:search = '' OR lower(cd.libelle) LIKE lower(CONCAT('%', :search, '%'))) AND " +
+                        "(:type = '' OR lower(cd.type) LIKE lower(CONCAT('%', :type, '%')))  AND " +
+                        "(:idUtilisateur = cd.utilisateur.idUtilisateur OR cd.utilisateur is  NULL) ")
+        Page<CategorieDepense> findByFilters(@Param("search") String search, @Param("type") String type,
+                        @Param("idUtilisateur") Long idUtilisateur, Pageable pageable);
 
 }

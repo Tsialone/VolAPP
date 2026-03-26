@@ -40,3 +40,4 @@ INSERT INTO param (libelle, valeur) VALUES
 
 
 INSERT INTO utilisateur (nom , mdp , role , active , email) VALUES ('Tsialone' , 'test' , 'ROLE_USER' , true, 'tsialone1902@gmail.com');
+INSERT INTO utilisateur (nom , mdp , role , active , email) VALUES ('Admin' , 'test' , 'ROLE_USER' , true, 'toto@gmail.com');

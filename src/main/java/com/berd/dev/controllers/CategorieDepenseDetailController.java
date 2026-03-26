@@ -1,5 +1,7 @@
 package com.berd.dev.controllers;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -66,7 +68,9 @@ public class CategorieDepenseDetailController {
 
         model.addAttribute("detail", detail);
         model.addAttribute("detailForm", detailForm);
-        model.addAttribute("categories", categorieService.getAll());
+        model.addAttribute("categories", categorieService.getAllDto());
+        // model.addAttribute("categories", List.of());
+
         model.addAttribute("content", "pages/categorie-depense-details/categorie-depense-detail-saisie");
 
         return "admin-layout";

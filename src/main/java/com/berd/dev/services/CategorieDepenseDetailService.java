@@ -10,8 +10,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import com.berd.dev.models.CategorieDepense;
 import com.berd.dev.models.CategorieDepenseDetail;
+import com.berd.dev.models.User;
 import com.berd.dev.repositories.CategorieDepenseDetailRepository;
+import com.berd.dev.repositories.CategorieDepenseRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,6 +22,27 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CategorieDepenseDetailService {
     private final CategorieDepenseDetailRepository categorieDepenseDetailRepository;
+
+
+    private final CategorieDepenseRepository categorieDepenseRepository;
+
+
+    private final SecurityService securityService;
+
+    public List<CategorieDepenseDetail> getByIdUtilisateur (Long idUtilisateur) {
+        List<CategorieDepenseDetail> resp = new ArrayList<>();
+        for (CategorieDepenseDetail categorieDepenseDetail : getAll()) {
+            if (categorieDepenseDetail.getIdCategorieDepense() == null) continue;
+            CategorieDepense  categorieDepense =  categorieDepenseRepository.findById(categorieDepenseDetail.getIdCategorieDepense()).orElse(null);
+            if (categorieDepense.getUtilisateur() != null && categorieDepense.getUtilisateur().getIdUtilisateur().equals(idUtilisateur)){
+                resp.add(categorieDepenseDetail);
+            }
+            
+        }
+
+
+        return resp;
+    }
 
     public List<CategorieDepenseDetail> getByIdCategorieDepense(Integer idCd) {
         if (idCd == null)
@@ -32,9 +56,10 @@ public class CategorieDepenseDetailService {
 
     public Page<CategorieDepenseDetail> getFilteredDetails(String search, Integer categorieId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "created"));
+        User user = securityService.getAuthenticatedUser();
 
         if ((search == null || search.trim().isEmpty()) && categorieId == null) {
-            return categorieDepenseDetailRepository.findAll(pageable);
+            return getByIdUtilisateur(user.getIdUtilisateur());
         }
 
         return categorieDepenseDetailRepository.findByFilters(
