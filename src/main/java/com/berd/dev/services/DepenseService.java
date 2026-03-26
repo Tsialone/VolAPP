@@ -150,9 +150,7 @@ public class DepenseService {
         return depense;
     }
 
-    public Page<Depense> getFilteredDepenses(Integer categorieId, Boolean estPrevue,
-            LocalDate dateDebut, LocalDate dateFin,
-            String search, int page, int size) {
+    public Page<Depense> getFilteredDepenses(Integer categorieId, Boolean estPrevue, LocalDate dateDebut, LocalDate dateFin,String search, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "created"));
 
         Specification<Depense> spec = (root, query, cb) -> {

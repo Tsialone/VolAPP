@@ -37,3 +37,6 @@ INSERT INTO categorie_depense_detail (libelle, id_cd, created) VALUES
 
 INSERT INTO param (libelle, valeur) VALUES 
 ('expiration_token', '5'); -- Durée de validité des tokens en minutes
+
+
+INSERT INTO utilisateur (nom , mdp , role , active , email) VALUES ('Tsialone' , 'test' , 'ROLE_USER' , true, 'tsialone1902@gmail.com');

@@ -19,7 +19,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.berd.dev.forms.DepenseDetailForm;
 import com.berd.dev.forms.DepenseForm;
 import com.berd.dev.models.Depense;
-import com.berd.dev.models.DepenseDetail;
 import com.berd.dev.services.CategorieDepenseDetailService;
 import com.berd.dev.services.CategorieDepenseService;
 import com.berd.dev.services.DepenseService;
