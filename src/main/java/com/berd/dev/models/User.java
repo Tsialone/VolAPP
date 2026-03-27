@@ -8,6 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.berd.dev.utils.ConstanteUtils;
 import com.berd.dev.utils.jackson.EmailMaskingSerializer;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -71,6 +72,12 @@ public class User implements UserDetails {
     @JsonSerialize(using = EmailMaskingSerializer.class)
     public String getMaskedEmail() {
         return this.email;
+    }
+
+    @Transient
+    public String getRoleByMap (){
+        System.out.println("role: " + ConstanteUtils.userRoleMap.get(getRole()));
+        return ConstanteUtils.userRoleMap.get(getRole());
     }
 
     @JsonIgnore

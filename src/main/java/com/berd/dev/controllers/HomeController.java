@@ -11,11 +11,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.berd.dev.models.User;
+import com.berd.dev.services.SecurityService;
 import com.berd.dev.services.UniteService;
 import com.berd.dev.services.UserService;
 
 import jakarta.servlet.http.HttpServletRequest;
-
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @Controller
@@ -25,6 +26,9 @@ public class HomeController {
     private final UniteService uniteService;
 
     private final UserService userService;
+
+
+    private final SecurityService securityService;
 
     @GetMapping("/reset-password")
     public String resetPasswordForm(@RequestParam("token") String token, Model model, RedirectAttributes rd,
