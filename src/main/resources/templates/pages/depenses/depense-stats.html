@@ -49,6 +49,12 @@
                     </tbody>
                 </table>
             </div>
+            <div class="d-flex justify-content-between align-items-center mt-2 flex-wrap gap-2" id="statsPaginationWrap" style="display:none!important;">
+                <small class="text-muted" id="statsPageInfo"></small>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0" id="statsPagination"></ul>
+                </nav>
+            </div>
         </div>
     </div>
 
@@ -150,22 +156,26 @@
             return `${entierFormate},${decimal} Ar`;
         }
 
-        function renderStatsFromData(data, moyenneGlobale, maxLabel, maxValue) {
+        const STATS_PAGE_SIZE = 10;
+        let statsCurrentPage = 1;
+        let statsAllData = [];
+
+        function renderStatsPage(page) {
             const tbody = document.getElementById('statsBody');
-            const moyenneValue = document.getElementById('moyenneValue');
-            const maxPeriodeLabel = document.getElementById('maxPeriodeLabel');
-            const maxPeriodeValue = document.getElementById('maxPeriodeValue');
+            const paginationEl = document.getElementById('statsPagination');
+            const pageInfoEl = document.getElementById('statsPageInfo');
+            const wrapEl = document.getElementById('statsPaginationWrap');
+
+            const total = statsAllData.length;
+            const totalPages = Math.ceil(total / STATS_PAGE_SIZE);
+            statsCurrentPage = Math.max(1, Math.min(page, totalPages));
+
+            const start = (statsCurrentPage - 1) * STATS_PAGE_SIZE;
+            const end = Math.min(start + STATS_PAGE_SIZE, total);
+            const pageData = statsAllData.slice(start, end);
 
             tbody.innerHTML = '';
-
-            if (data.length === 0) {
-                moyenneValue.textContent = '0,00 Ar';
-                maxPeriodeLabel.textContent = '-';
-                maxPeriodeValue.textContent = '0,00 Ar';
-                return;
-            }
-
-            data.forEach(item => {
+            pageData.forEach(item => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${item.label}</td>
@@ -173,6 +183,86 @@
                 `;
                 tbody.appendChild(tr);
             });
+
+            // pagination bar
+            if (total === 0 || totalPages <= 1) {
+                wrapEl.style.setProperty('display', 'none', 'important');
+                return;
+            }
+            wrapEl.style.removeProperty('display');
+
+            pageInfoEl.textContent = `${start + 1}–${end} sur ${total}`;
+
+            paginationEl.innerHTML = '';
+
+            const addBtn = (label, targetPage, disabled, active) => {
+                const li = document.createElement('li');
+                li.className = `page-item${disabled ? ' disabled' : ''}${active ? ' active' : ''}`;
+                const a = document.createElement('a');
+                a.className = 'page-link';
+                a.href = '#';
+                a.innerHTML = label;
+                if (!disabled && !active) {
+                    a.addEventListener('click', (e) => { e.preventDefault(); renderStatsPage(targetPage); });
+                }
+                li.appendChild(a);
+                paginationEl.appendChild(li);
+            };
+
+            addBtn('&laquo;', 1, statsCurrentPage === 1, false);
+            addBtn('&lsaquo;', statsCurrentPage - 1, statsCurrentPage === 1, false);
+
+            // window of page numbers
+            const delta = 2;
+            const rangeStart = Math.max(1, statsCurrentPage - delta);
+            const rangeEnd = Math.min(totalPages, statsCurrentPage + delta);
+
+            if (rangeStart > 1) {
+                addBtn('1', 1, false, false);
+                if (rangeStart > 2) {
+                    const li = document.createElement('li');
+                    li.className = 'page-item disabled';
+                    li.innerHTML = '<span class="page-link">…</span>';
+                    paginationEl.appendChild(li);
+                }
+            }
+
+            for (let p = rangeStart; p <= rangeEnd; p++) {
+                addBtn(String(p), p, false, p === statsCurrentPage);
+            }
+
+            if (rangeEnd < totalPages) {
+                if (rangeEnd < totalPages - 1) {
+                    const li = document.createElement('li');
+                    li.className = 'page-item disabled';
+                    li.innerHTML = '<span class="page-link">…</span>';
+                    paginationEl.appendChild(li);
+                }
+                addBtn(String(totalPages), totalPages, false, false);
+            }
+
+            addBtn('&rsaquo;', statsCurrentPage + 1, statsCurrentPage === totalPages, false);
+            addBtn('&raquo;', totalPages, statsCurrentPage === totalPages, false);
+        }
+
+        function renderStatsFromData(data, moyenneGlobale, maxLabel, maxValue) {
+            const moyenneValue = document.getElementById('moyenneValue');
+            const maxPeriodeLabel = document.getElementById('maxPeriodeLabel');
+            const maxPeriodeValue = document.getElementById('maxPeriodeValue');
+
+            statsAllData = data || [];
+            statsCurrentPage = 1;
+
+            if (statsAllData.length === 0) {
+                document.getElementById('statsBody').innerHTML = '';
+                document.getElementById('statsPaginationWrap').style.setProperty('display', 'none', 'important');
+                moyenneValue.textContent = '0,00 Ar';
+                maxPeriodeLabel.textContent = '-';
+                maxPeriodeValue.textContent = '0,00 Ar';
+                return;
+            }
+
+            renderStatsPage(1);
 
             moyenneValue.textContent = formatMontant(moyenneGlobale || 0);
             maxPeriodeLabel.textContent = maxLabel || '-';
@@ -286,8 +376,6 @@
                 svg.appendChild(text);
             });
 
-<<<<<<< Updated upstream
-=======
             // ── Catmull-Rom → cubic Bézier helper ───────────────────────────
             function catmullRom2bezier(pts) {
                 if (!pts || pts.length === 0) return '';
@@ -310,7 +398,6 @@
             // ── Series: path + dots in a <g> for easy show/hide ─────────────
             const allPoints = []; // needed by tooltip
 
->>>>>>> Stashed changes
             cfg.series.forEach((serie, sIdx) => {
                 const color = colors[sIdx % colors.length];
                 const points = serie.values.map((value, idx) => {
@@ -324,15 +411,6 @@
                 g.setAttribute('data-serie', String(sIdx));
 
                 const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-<<<<<<< Updated upstream
-                path.setAttribute('d', points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' '));
-                path.setAttribute('fill', 'none');
-                path.setAttribute('stroke', color);
-                path.setAttribute('stroke-width', '2.5');
-                svg.appendChild(path);
-
-                points.forEach(point => {
-=======
                 path.setAttribute('d', catmullRom2bezier(points));
                 path.setAttribute('fill', 'none');
                 path.setAttribute('stroke', color);
@@ -342,7 +420,6 @@
                 g.appendChild(path);
 
                 points.forEach(pt => {
->>>>>>> Stashed changes
                     const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
                     dot.setAttribute('cx', String(pt.x));
                     dot.setAttribute('cy', String(pt.y));
