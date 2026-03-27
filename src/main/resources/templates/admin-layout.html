@@ -162,7 +162,7 @@
         // Intercepter tous les clics sur les liens
         document.addEventListener('click', function(e) {
             const link = e.target.closest('a[href]');
-            
+
             // Ignorer si pas un lien interne
             if (!link || 
                 link.getAttribute('href').startsWith('#') || 
@@ -171,13 +171,25 @@
                 link.hasAttribute('target')) {
                 return;
             }
-            
-            showLoader();
+
+            // Delay showing the loader to let other click handlers run (e.g. confirm())
+            // and cancel navigation via event.preventDefault(). If navigation was prevented,
+            // don't show the loader (prevents UI appearing stuck when user cancels).
+            setTimeout(() => {
+                if (!e.defaultPrevented) {
+                    showLoader();
+                }
+            }, 0);
         });
 
         // Intercepter les soumissions de formulaires
         document.addEventListener('submit', function(e) {
-            showLoader();
+            // Defer to let submit handlers run and possibly call event.preventDefault().
+            setTimeout(() => {
+                if (!e.defaultPrevented) {
+                    showLoader();
+                }
+            }, 0);
         });
 
         // Terminer le loader quand la page est chargée
