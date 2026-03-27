@@ -33,11 +33,14 @@ public class CategorieDepenseDetailController {
     public String liste(
             @RequestParam(defaultValue = "") String search,
             @RequestParam(required = false) Integer categorieId,
+            @RequestParam(required = false, name = "all") String allParam,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             Model model) {
-
-        Page<CategorieDepenseDetail> details = detailService.getFilteredDetails(search, categorieId, page, size);
+        boolean all = false;
+        if (allParam != null && !allParam.isEmpty() && allParam.equals("on"))
+            all = true;
+        Page<CategorieDepenseDetail> details = detailService.getFilteredDetails(search, categorieId, page, size , all);
 
         model.addAttribute("details", details);
         model.addAttribute("categories", categorieService.getAll());

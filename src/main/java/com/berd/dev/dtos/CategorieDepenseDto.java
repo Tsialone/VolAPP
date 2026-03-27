@@ -8,10 +8,10 @@ import lombok.NoArgsConstructor;
 public class CategorieDepenseDto {
     private Integer idCategorieDepense;
     private String libelle;
-    private Long idUtilisateur;
+    private Integer idUtilisateur;
 
     public CategorieDepenseDto(
-            Integer idCategorieDepense, String libelle, Long idUtilisateur) {
+            Integer idCategorieDepense, String libelle, Integer idUtilisateur) {
         setIdCategorieDepense(idCategorieDepense);
         setIdUtilisateur(idUtilisateur);
         setLibelle(libelle);

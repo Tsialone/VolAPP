@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.berd.dev.dtos.CategorieDepenseDto;
 import com.berd.dev.mappers.CategorieDepenseMapper;
 import com.berd.dev.models.CategorieDepense;
+import com.berd.dev.models.CategorieDepenseDetail;
 import com.berd.dev.models.User;
 import com.berd.dev.repositories.CategorieDepenseRepository;
 
@@ -24,8 +25,8 @@ public class CategorieDepenseService {
 
     private final SecurityService securityService;
 
- public List<CategorieDepenseDto> getAllDto() {
-        return  CategorieDepenseMapper.toDto(getAll());
+    public List<CategorieDepenseDto> getAllDto() {
+        return CategorieDepenseMapper.toDto(getAll());
     }
 
     public List<CategorieDepense> getAll() {
@@ -48,7 +49,16 @@ public class CategorieDepenseService {
         return categorieDepenseRepository.save(categorieDepense);
     }
 
-    public void deleteById(Integer id) {
+    public void deleteById(Integer id) throws Exception {
+        User user = securityService.getAuthenticatedUser();
+        if (id == null)
+            throw new Exception("Id ne doit pas etre null pendant suppression categorie depense");
+        CategorieDepense cd = categorieDepenseRepository.findById(id).orElse(null);
+        if (cd == null)
+            throw new Exception("Categorie depense non trouvée");
+        if (cd.getUtilisateur() == null || cd.getUtilisateur() != null
+                && !cd.getUtilisateur().getIdUtilisateur().equals(user.getIdUtilisateur()))
+            throw new Exception("Vous ne pouvez supprimez que votre propre categorie depense");
         categorieDepenseRepository.deleteById(id);
     }
 
@@ -59,22 +69,40 @@ public class CategorieDepenseService {
         return categorieDepenseRepository.findByCriteria(libelle, user.getIdUtilisateur());
     }
 
-    public Page<CategorieDepense> getFilteredCategories(String search, String type, int page, int size) {
+    public Page<CategorieDepense> getFilteredCategories(String search, String type, int page, int size, boolean all) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("libelle").ascending());
         User user = securityService.getAuthenticatedUser();
 
         if ((search != null && !search.trim().isEmpty()) || (type != null && !type.trim().isEmpty())) {
-            return categorieDepenseRepository.findByFilters(
-                    search != null ? search.trim() : "",
-                    type != null ? type.trim() : "",
-                    user.getIdUtilisateur(),
-                    pageable);
-        }
+            if (all) {
+                return categorieDepenseRepository.findByFiltersAll(
+                        search != null ? search.trim() : "",
+                        type != null ? type.trim() : "",
+                        user.getIdUtilisateur(),
+                        pageable);
+            } else {
+                return categorieDepenseRepository.findByFilters(
+                        search != null ? search.trim() : "",
+                        type != null ? type.trim() : "",
+                        user.getIdUtilisateur(),
+                        pageable);
+            }
 
-        return categorieDepenseRepository.findByFilters(
+        }
+         if (all) {
+                 return categorieDepenseRepository.findByFiltersAll(
                 "", // search vide
                 "", // type vide
                 user.getIdUtilisateur(),
                 pageable);
+            } else {
+                return categorieDepenseRepository.findByFilters(
+                "", // search vide
+                "", // type vide
+                user.getIdUtilisateur(),
+                pageable);
+            }
+
+       
     }
 }

@@ -61,7 +61,7 @@ public class DepenseController {
     public String form(Model model, jakarta.servlet.http.HttpSession session) {
 
         model.addAttribute("categoriesDetail", categorieDepenseDetailService.getAll());
-        model.addAttribute("categories", categorieDepenseService.getAll());
+        model.addAttribute("categories", categorieDepenseService.getAllDto());
         model.addAttribute("unites", uniteService.getAll());
 
         // Récupérer le formulaire de la session s'il existe

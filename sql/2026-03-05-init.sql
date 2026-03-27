@@ -51,8 +51,10 @@ CREATE TABLE categorie_depense_detail(
    libelle VARCHAR(50)  NOT NULL,
    created TIMESTAMP,
    id_cd INTEGER NOT NULL,
+   id_utilisateur INTEGER,
    PRIMARY KEY(id_cdd),
    FOREIGN KEY(id_cd) REFERENCES categorie_depense(id_cd)
+   FOREIGN KEY(id_utilisateur) REFERENCES utilisateur(id_utilisateur)
 );
 
 CREATE TABLE depense_detail(
