@@ -188,7 +188,7 @@ public class HomeController {
                 "Inscription réussie! Veuillez vérifier votre email pour activer votre compte.");
         rd.addFlashAttribute("toastType", "success");
 
-        System.out.println(user);
+        // System.out.println(user);
 
         
 
