@@ -50,6 +50,7 @@ public class DepenseController {
         Page<Depense> depensesPage = depenseService.getFilteredDepenses(
                 categorieId, estPrevue, dateDebut, dateFin, search, page, size);
 
+
         model.addAttribute("depenses", depensesPage);
         model.addAttribute("categories", categorieDepenseService.getAll());
         model.addAttribute("totalGeneral", depenseService.calculateTotal(depensesPage.getContent()));
