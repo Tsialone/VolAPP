@@ -32,6 +32,7 @@ public class CaisseController {
     @GetMapping("/saisie")
     public String saisie(Model model, jakarta.servlet.http.HttpSession session) {
         model.addAttribute("categories", caisseCategoreRepository.findAll());
+        model.addAttribute("lastCaisses", caisseService.getLastTransaction(10));
 
         CaisseForm form = (CaisseForm) session.getAttribute("caisseForm");
         if (form != null) {
