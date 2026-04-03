@@ -94,6 +94,14 @@ public class CaisseService {
         caisseRepository.delete(caisse);
     }
 
+    public Caisse getCaisseWithMvt(Integer idCaisse) {
+        Caisse caisse = caisseRepository.findByIdWithCaisseMvt(idCaisse);
+        if (caisse == null) {
+            throw new IllegalArgumentException("Caisse non trouvée avec l'id: " + idCaisse);
+        }
+        return caisse;
+    }
+
     public List<CaisseDto> filterCaisses(Integer categorieId, LocalDate dateDebut, LocalDate dateFin, String search) {
         User utilisateur = securityService.getAuthenticatedUser();
         
