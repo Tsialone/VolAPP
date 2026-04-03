@@ -32,21 +32,30 @@ public class Depense {
     @Column
     private String description;
 
-    @OneToMany (mappedBy =  "depense")
+    @OneToMany(mappedBy = "depense")
     private List<DepenseDetail> depenseDetails;
 
     @ManyToOne
-    @JoinColumn (name =  "id_utilisateur")
+    @JoinColumn(name = "id_utilisateur")
     private User utilisateur;
 
-
-
-
     @ManyToOne
-    @JoinColumn (name =   "id_cd")
+    @JoinColumn(name = "id_cd")
     private CategorieDepense categorieDepense;
-    
+
+    @Column (name =  "montant_total" , nullable =  false)
+    private Double montantTotal =  0d; 
+
+    @Column (name =  "total_payer"  , nullable =  false)
+    private Double totalPayer = 0d;
+
     @Transient
-    private Double montantTotal;
+    public void refreshMontantTotal() {
+        Double resp = 0d;
+        for (DepenseDetail depenseDetail : depenseDetails) {
+            resp += depenseDetail.getPu() * depenseDetail.getQte();
+        }
+        setMontantTotal(resp);
+    }
 
 }

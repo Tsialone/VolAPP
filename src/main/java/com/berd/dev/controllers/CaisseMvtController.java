@@ -8,70 +8,79 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.berd.dev.forms.CaisseForm;
+import com.berd.dev.forms.CaisseMvtForm;
+import com.berd.dev.services.CaisseMvtService;
 import com.berd.dev.services.CaisseService;
-import com.berd.dev.repositories.CaisseCategoreRepository;
+import com.berd.dev.services.DepenseService;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @Controller
-@RequestMapping("/caisses")
+@RequestMapping("/caisses-mvts")
 @RequiredArgsConstructor
-public class CaisseController {
+public class CaisseMvtController {
 
+    private final CaisseMvtService caisseMvtService;
     private final CaisseService caisseService;
-    private final CaisseCategoreRepository caisseCategoreRepository;
+
+
+
+    private final DepenseService depenseService;
 
     @GetMapping("/liste")
     public String liste(Model model) {
-        model.addAttribute("caisses", caisseService.getAll());
-        model.addAttribute("content", "pages/caisses/caisse-liste");
+        model.addAttribute("mvts", caisseMvtService.getAll());
+        model.addAttribute("content", "pages/caisses/caisse-mvt-liste");
         return "admin-layout";
     }
 
     @GetMapping("/saisie")
     public String saisie(Model model, jakarta.servlet.http.HttpSession session) {
-        model.addAttribute("categories", caisseCategoreRepository.findAll());
-        model.addAttribute("lastCaisses", caisseService.getLastTransaction(10));
+        model.addAttribute("caisses", caisseService.getAllDto());
+        model.addAttribute("depenses", depenseService.getAllDto());
+        model.addAttribute("lastMvts", caisseMvtService.getLastTransaction(5));
 
-        CaisseForm form = (CaisseForm) session.getAttribute("caisseForm");
+        CaisseMvtForm form = (CaisseMvtForm) session.getAttribute("caisseMvtForm");
         if (form != null) {
-            model.addAttribute("caisseForm", form);
+            model.addAttribute("caisseMvtForm", form);
         } else {
-            model.addAttribute("caisseForm", new CaisseForm());
+            model.addAttribute("caisseMvtForm", new CaisseMvtForm());
         }
 
-        model.addAttribute("content", "pages/caisses/caisse-saisie");
+        model.addAttribute("content", "pages/caisses/caisse-mvt-saisie");
         return "admin-layout";
     }
 
     @PostMapping("/save")
-    public String save(@ModelAttribute CaisseForm form, RedirectAttributes rd,
-            jakarta.servlet.http.HttpSession session) {
+    public String save(@ModelAttribute CaisseMvtForm form, RedirectAttributes rd,
+            HttpSession session) {
         try {
-
-            caisseService.saveByForm(form);
-            session.removeAttribute("caisseForm");
-            rd.addFlashAttribute("toastMessage", "Caisse enregistrée avec succès");
+            caisseMvtService.saveByForm(form);
+            session.removeAttribute("caisseMvtForm");
+            rd.addFlashAttribute("toastMessage", "Mouvement enregistré avec succès");
             rd.addFlashAttribute("toastType", "success");
         } catch (IllegalArgumentException e) {
-            session.setAttribute("caisseForm", form);
+            session.setAttribute("caisseMvtForm", form);
             rd.addFlashAttribute("toastMessage", e.getMessage());
             rd.addFlashAttribute("toastType", "warning");
+            e.printStackTrace();
         } catch (Exception e) {
-            session.setAttribute("caisseForm", form);
+            session.setAttribute("caisseMvtForm", form);
             rd.addFlashAttribute("toastMessage", "Erreur lors de l'enregistrement: " + e.getMessage());
             rd.addFlashAttribute("toastType", "error");
+            e.printStackTrace();
+
         }
-        return "redirect:/caisses/saisie";
+        return "redirect:/caisses-mvts/saisie";
     }
 
     @GetMapping("/annuler")
     public String annuler(jakarta.servlet.http.HttpSession session, RedirectAttributes rd) {
-        session.removeAttribute("caisseForm");
+        session.removeAttribute("caisseMvtForm");
         rd.addFlashAttribute("toastMessage", "Opération annulée");
         rd.addFlashAttribute("toastType", "info");
-        return "redirect:/caisses/liste";
+        return "redirect:/caisses-mvts/saisie";
     }
 
 }
