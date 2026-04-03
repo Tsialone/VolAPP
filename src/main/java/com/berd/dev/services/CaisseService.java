@@ -1,6 +1,8 @@
 package com.berd.dev.services;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -21,14 +23,23 @@ public class CaisseService {
     private final CaisseRepository caisseRepository;
     private final CaisseCategoreRepository caisseCategoreRepository;
 
-    private SecurityService securityService;
+    private final SecurityService securityService;
 
+    public List<CaisseDto> getLastTransaction(int nbrTransaction) {
+        User utilisateur = securityService.getAuthenticatedUser();
 
-    public List<CaisseDto> getAllDto (){
-        
-        return CaisseMapper.tDtos(caisseRepository.findAll());
+        List<CaisseDto> resp = CaisseMapper
+                .tDtos(caisseRepository.findByUtilisateurIdUtilisateur(utilisateur.getIdUtilisateur()));
+        return resp.stream()
+                .sorted(Comparator.comparing(CaisseDto::getCreated).reversed())
+                .limit(nbrTransaction)
+                .collect(Collectors.toList());
     }
 
+    public List<CaisseDto> getAllDto() {
+        User utilisateur = securityService.getAuthenticatedUser();
+        return CaisseMapper.tDtos(caisseRepository.findByUtilisateurIdUtilisateur(utilisateur.getIdUtilisateur()));
+    }
 
     public Caisse saveByForm(CaisseForm form) {
         User user = securityService.getAuthenticatedUser();
