@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.berd.dev.forms.CaisseMvtForm;
@@ -36,7 +37,7 @@ public class CaisseMvtController {
     }
 
     @GetMapping("/saisie")
-    public String saisie(Model model, jakarta.servlet.http.HttpSession session) {
+    public String saisie(Model model, jakarta.servlet.http.HttpSession session , @RequestParam(required = false) Integer idCaisse) {
         model.addAttribute("caisses", caisseService.getAllDto());
         model.addAttribute("depenses", depenseService.getAllDto());
         model.addAttribute("lastMvts", caisseMvtService.getLastTransaction(5));
@@ -45,7 +46,9 @@ public class CaisseMvtController {
         if (form != null) {
             model.addAttribute("caisseMvtForm", form);
         } else {
-            model.addAttribute("caisseMvtForm", new CaisseMvtForm());
+            form = new CaisseMvtForm();
+            if (idCaisse != null) form.setIdCaisse(idCaisse);
+            model.addAttribute("caisseMvtForm", form);
         }
 
         model.addAttribute("content", "pages/caisses/caisse-mvt-saisie");
