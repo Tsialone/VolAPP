@@ -41,4 +41,29 @@ public class CaisseMvt {
 
     private LocalDateTime created = LocalDateTime.now();
 
+    public Double getMontant() {
+        if (debit > 0) {
+            return debit;
+        } else if (credit > 0) {
+            return credit;
+        } else {
+            return 0d;
+        }
+    }
+
+    public String getType() {
+        if (debit > 0) {
+            return "DEBIT";
+        } else if (credit > 0) {
+            return "CREDIT";
+        } else {
+            return "NEUTRE";
+        }
+    }
+    public User getUtilisateur() {
+        return caisse.getUtilisateur();
+    }
+
+    
+
 }
