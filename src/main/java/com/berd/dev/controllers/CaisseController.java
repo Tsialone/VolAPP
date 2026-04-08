@@ -2,6 +2,7 @@ package com.berd.dev.controllers;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
@@ -19,6 +20,7 @@ import com.berd.dev.dtos.CaisseCategorieDto;
 import com.berd.dev.forms.CaisseForm;
 import com.berd.dev.mappers.CaisseCategorieMapper;
 import com.berd.dev.models.Caisse;
+import com.berd.dev.models.CaisseMvt;
 import com.berd.dev.services.CaisseService;
 import com.berd.dev.repositories.CaisseCategoreRepository;
 
@@ -39,15 +41,15 @@ public class CaisseController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFin,
             @RequestParam(required = false) String search,
             Model model) {
-        
+
         var caisses = caisseService.filterCaisses(categorieId, dateDebut, dateFin, search);
         var categories = caisseCategoreRepository.findAll();
-        
+
         // Calculer le solde total
         Double soldeTotal = caisses.stream()
                 .mapToDouble(c -> c.getSolde() != null ? c.getSolde() : 0d)
                 .sum();
-        
+
         model.addAttribute("caisses", caisses);
         model.addAttribute("categories", categories);
         model.addAttribute("soldeTotal", soldeTotal);
@@ -58,8 +60,11 @@ public class CaisseController {
     @GetMapping("/fiche/{id}")
     public String fiche(@PathVariable Integer id, Model model) {
         var caisse = caisseService.getCaisseWithMvt(id);
+        List<CaisseMvt> sortedMvts = caisse.getCaisseMvts().stream()
+                .sorted((m1, m2) -> m2.getCreated().compareTo(m1.getCreated()))
+                .collect(Collectors.toList());
         model.addAttribute("caisse", caisse);
-        model.addAttribute("mouvements", caisse.getCaisseMvts().stream ().sorted((m1, m2) -> m2.getCreated().compareTo(m1.getCreated())));
+        model.addAttribute("mouvements", sortedMvts);
         model.addAttribute("content", "pages/caisses/caisse-fiche");
         return "admin-layout";
     }
@@ -69,7 +74,7 @@ public class CaisseController {
         try {
             Caisse caisse = caisseService.getCaisseById(id);
             List<CaisseCategorieDto> categories = CaisseCategorieMapper.tDtos(caisseCategoreRepository.findAll());
-            
+
             model.addAttribute("caisse", caisse);
             model.addAttribute("categories", categories);
             model.addAttribute("content", "pages/caisses/caisse-edit");
